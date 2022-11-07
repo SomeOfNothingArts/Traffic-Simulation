@@ -204,15 +204,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0218730a75eb98489a363b7a0583f32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BumperTrigger: {fileID: 901324690019822926}
-  PlanedNextMovementPoint: {fileID: 0}
-  NextMovementPoint: {fileID: 0}
-  IsaBus: 0
-  VehicleLength: 0
-  _Speed: 0
-  SpeedAcceleration: 0.05
-  SpeedBreak: 0.2
-  SpeedMax: 0.25
+  bumperTrigger: {fileID: 901324690019822926}
+  planedNextMovementPoint: {fileID: 0}
+  nextMovementPoint: {fileID: 0}
+  vehicleLength: 0
+  speed: 0
+  speedAcceleration: 0.05
+  speedBreak: 0.2
+  speedMax: 0.25
 --- !u!114 &5853802741870630784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,16 +224,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef2d4252a6e91e244ace7ddeef829c41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AvailableMaterials:
+  availableMaterials:
   - {fileID: 2100000, guid: 819c2c849d6d61b4d88ec9cee0878b86, type: 2}
   - {fileID: 2100000, guid: c7a72d28f9f815e4ba89f4dbe14b296f, type: 2}
-  BodyParts:
+  bodyParts:
   - {fileID: 375688186547661825}
-  LStearingWheels:
-  - {fileID: 2128443583046874580}
-  RStearingWheels:
-  - {fileID: 8871907193435777312}
-  DriveWheels:
+  driveWheels:
   - {fileID: 2128443583046874580}
   - {fileID: 8871907193435777312}
   - {fileID: 6447129329722343728}

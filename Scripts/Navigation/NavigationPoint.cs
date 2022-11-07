@@ -5,36 +5,37 @@ using UnityEngine.Events;
 
 public class NavigationPoint : MonoBehaviour
 {
-    bool SelectedInEditor = false;
+    private bool selectedInEditor = false;
 
     [Range(0, 9)] // selected id for object in NextNavigationPoints to use AutoConnector on;
-    public int AutoConnectorSelectedNaviPoint;
+    public int autoConnectorSelectedNaviPoint;
     [Range(0, 50)] // range of searching to new points by AutoConnector;
-    public int AutoConnectorRange = 5;
+    [SerializeField]
+    private int autoConnectorRange = 5;
     // variable for saving id of last autoconnected point and sorting them in order;
-    int RandomNumber;
+    private int randomNumber;
 
     // All conected navigation points for which #0 is the main direction of road
-    public GameObject[] NextNavigationPoints;
+    public GameObject[] nextNavigationPoints = new GameObject[1];
     // Vehicle which reserved this navigation point for its movement
-    public GameObject OccupyingObject;
+    public GameObject occupyingObject;
     // Is this navigation point disabled by StreetLights?
-    public bool RedLight;
+    public bool redLight;
 
     // Is this vehicle despawn zone
-    public bool IsEndPoint;    
+    public bool isEndPoint;    
     // Is this vehicle spawn zone
-    public bool IsStartPoint;
+    public bool isStartPoint;
 
     // Is this start of section point
-    public bool IsCrossingStartPoint;
+    public bool isCrossingStartPoint;
     // End this start of section point
-    public bool IsCrossingEndPoint;
+    public bool isCrossingEndPoint;
 
     // subscribsion to event
     private void OnEnable()
     {
-        if (IsStartPoint)
+        if (isStartPoint)
         {
             VehicleSpawnerMaster.OnSpawn += SpawnNewCar;
         }
@@ -48,13 +49,13 @@ public class NavigationPoint : MonoBehaviour
     // Inside Editor button which highlights next navigationpoints ways
     public void MarkConnections()
     {
-        if (SelectedInEditor)
+        if (selectedInEditor)
         {
-            SelectedInEditor = false;
+            selectedInEditor = false;
         }
         else
         {
-            SelectedInEditor = true;
+            selectedInEditor = true;
         }
     }
 
@@ -62,18 +63,18 @@ public class NavigationPoint : MonoBehaviour
     void SpawnNewCar()
     {
         int rn = Random.Range(0, 4);
-        if (OccupyingObject == null && rn >= 3)
+        if (occupyingObject == null && rn >= 3)
         {
             VehicleSpawnerMaster VSMaster = VehicleSpawnerMaster.instance;
             Vector3 SpawnPos = gameObject.transform.position;
             SpawnPos.y = 0;
 
-            if (VSMaster.SpawnableCars != null)
+            if (VSMaster.spawnableCars != null)
             {
-                GameObject newCar = Instantiate(VSMaster.SpawnableCars[Random.Range(0, VSMaster.SpawnableCars.Length)], SpawnPos, Quaternion.identity);
-                newCar.GetComponent<VehicleMovement>().NextMovementPoint = this;
+                GameObject newCar = Instantiate(VSMaster.spawnableCars[Random.Range(0, VSMaster.spawnableCars.Length)], SpawnPos, Quaternion.identity);
+                newCar.GetComponent<VehicleMovement>().nextMovementPoint = this;
 
-                Vector3 relativePos = new Vector3(NextNavigationPoints[0].GetComponent<NavigationPoint>().transform.position.x, 0, NextNavigationPoints[0].GetComponent<NavigationPoint>().transform.position.z) - new Vector3(transform.position.x, 0, transform.position.z);
+                Vector3 relativePos = new Vector3(nextNavigationPoints[0].GetComponent<NavigationPoint>().transform.position.x, 0, nextNavigationPoints[0].GetComponent<NavigationPoint>().transform.position.z) - new Vector3(transform.position.x, 0, transform.position.z);
                 newCar.transform.rotation = Quaternion.LookRotation(relativePos);
             }
         }
@@ -83,7 +84,7 @@ public class NavigationPoint : MonoBehaviour
     public void FindNewNavigationPoint()
     {
 
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, AutoConnectorRange);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, autoConnectorRange);
         NavigationPoint[] nearNPs = null;
 
         for (int x = 0; x < hitColliders.Length; x++)
@@ -120,17 +121,17 @@ public class NavigationPoint : MonoBehaviour
             }
         }
 
-        if (NextNavigationPoints.Length >= AutoConnectorSelectedNaviPoint && nearNPs != null)
+        if (nextNavigationPoints.Length >= autoConnectorSelectedNaviPoint && nearNPs != null)
         {
-            if (RandomNumber < nearNPs.Length - 1)
+            if (randomNumber < nearNPs.Length - 1)
             {
-                RandomNumber += 1;
+                randomNumber += 1;
             }
             else
             {
-                RandomNumber = 0;
+                randomNumber = 0;
             }
-            NextNavigationPoints[AutoConnectorSelectedNaviPoint] = nearNPs[RandomNumber].gameObject;
+            nextNavigationPoints[autoConnectorSelectedNaviPoint] = nearNPs[randomNumber].gameObject;
 
         }
     }
@@ -140,13 +141,13 @@ public class NavigationPoint : MonoBehaviour
         // Drawing debug sphere on navigation point in right color
         DrawSphere();
 
-        if (NextNavigationPoints[0] != null)
+        if (nextNavigationPoints[0] != null)
         {
-            foreach (GameObject marker in NextNavigationPoints)
+            foreach (GameObject marker in nextNavigationPoints)
             {
                 if (marker != null)
                 {
-                    if (SelectedInEditor) // if selected in editor drawing red debug line between all connected navigation points with cyan-yellow arrow in move direction
+                    if (selectedInEditor) // if selected in editor drawing red debug line between all connected navigation points with cyan-yellow arrow in move direction
                     {
                         DrawArrow(transform.position, marker.transform.position, 90, 0.5f, 1, Color.red, Color.yellow, Color.green);
                     }
@@ -164,31 +165,31 @@ public class NavigationPoint : MonoBehaviour
     {
         // Chenging navigation point debug color as movementlock state is
 
-        if (IsEndPoint) // if marked as vehicle despawn zone
+        if (isEndPoint) // if marked as vehicle despawn zone
         {
             Gizmos.color = Color.black;
         }
-        else if (NextNavigationPoints[0] == null) //if there is no next navigationpoint what will couse error
+        else if (nextNavigationPoints[0] == null) //if there is no next navigationpoint what will couse error
         {
             Gizmos.color = Color.magenta;
         }
-        else if (IsStartPoint) // if marked as vehicle spawn zone
+        else if (isStartPoint) // if marked as vehicle spawn zone
         {
             Gizmos.color = Color.white;
         }
-        else if (RedLight) // if stoped by street lights
+        else if (redLight) // if stoped by street lights
         {
             Gizmos.color = Color.red;
         }
-        else if (IsCrossingStartPoint) // if marked as start of section
+        else if (isCrossingStartPoint) // if marked as start of section
         {
             Gizmos.color = Color.cyan;
         }
-        else if (IsCrossingEndPoint) // if marked as end of section
+        else if (isCrossingEndPoint) // if marked as end of section
         {
             Gizmos.color = Color.blue;
         }
-        else if (OccupyingObject != null) // if reserved to move by any vehicle
+        else if (occupyingObject != null) // if reserved to move by any vehicle
         {
             Gizmos.color = Color.yellow;
         }

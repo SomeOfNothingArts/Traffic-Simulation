@@ -5,29 +5,25 @@ using UnityEngine;
 public class VehicleVisuals : MonoBehaviour
 {
     // Available material to use on specific vehicle
-    public Material[] AvailableMaterials;
+    public Material[] availableMaterials;
     // All body parts which will be set to random material
-    public GameObject[] BodyParts;
-    // ...
-    public GameObject[] LStearingWheels;
-    // ...
-    public GameObject[] RStearingWheels;
+    public GameObject[] bodyParts;
     // all wheels which are going to be rotated
-    public GameObject[] DriveWheels;
+    public GameObject[] driveWheels;
 
 
     private void Start()
     {
         // Vehicle material randomizator
-        if (AvailableMaterials != null)
+        if (availableMaterials != null)
         {
-            int randomMaterialId = Random.Range(0, AvailableMaterials.Length);
+            int randomMaterialId = Random.Range(0, availableMaterials.Length);
 
-            if (BodyParts != null)
+            if (bodyParts != null)
             {
-                foreach (GameObject part in BodyParts)
+                foreach (GameObject part in bodyParts)
                 {
-                    part.GetComponent<Renderer>().material = AvailableMaterials[randomMaterialId];
+                    part.GetComponent<Renderer>().material = availableMaterials[randomMaterialId];
                 }
             }
         }

@@ -5,19 +5,23 @@ using UnityEngine;
 public class VehicleBumperTrigger : MonoBehaviour
 {
 
-    public GameObject[] ObjectsInTrigger;
-    private GameObject[] _CopyOfObjectsInTrigger;
-    private GameObject[] _NewListOfObjectsInTrigger;
+    public GameObject[] objectsInTrigger;
 
-    public  bool BumperIsEnabled = true;
-    public bool BumperIsActivated;
+
+    public  bool bumperIsEnabled = true;
+    public bool bumperIsActivated;
 
     // trying to squeeze vehicle if they are facing each other and force them to move
     private void Update()
     {
-        if (BumperIsActivated && transform.localScale.x > 1)
+        if (bumperIsActivated && transform.localScale.x > 1)
         {
             transform.localScale += new Vector3(-0.1f, 0, 0);
+
+            if (objectsInTrigger == null)
+            {
+                bumperIsActivated = false;
+            }
         }
         else if (transform.localScale.x != 3)
         {
@@ -28,21 +32,15 @@ public class VehicleBumperTrigger : MonoBehaviour
     // activating bumper
     private void OnTriggerEnter(Collider other)
     {
-        if (BumperIsEnabled)
+        if (bumperIsEnabled)
         {
             if (other.tag != "Bumper")
             {
                 ObjectEnteringTrigger(other.gameObject);
-
-                if (ObjectsInTrigger != null)
-                {
-                    BumperIsActivated = true;
-                }
             }
             else
             {
                 Invoke("ForceToDrive", 2f);
-                //Debug.Log("Collision in: " + transform.position + " by " + gameObject.name);
             }
         }
     }
@@ -50,7 +48,7 @@ public class VehicleBumperTrigger : MonoBehaviour
     // drive despite collision to remove blockage
     void ForceToDrive()
     {
-        BumperIsActivated = false;
+        bumperIsActivated = false;
     }
 
     // allowing to move in case of road clearence
@@ -60,15 +58,14 @@ public class VehicleBumperTrigger : MonoBehaviour
         {
             ObjectLeavingTrigger(other.gameObject);
 
-            if (ObjectsInTrigger == null || ObjectsInTrigger.Length == 0)
+            if (objectsInTrigger == null || objectsInTrigger.Length == 0)
             {
-                BumperIsActivated = false;
+                bumperIsActivated = false;
             }
         }
         else
         {
             CancelInvoke("ForceToDrive");
-            //Debug.Log("Collision in: " + transform.position + " with " + gameObject.name + " ended");
         }
     }
 
@@ -77,91 +74,97 @@ public class VehicleBumperTrigger : MonoBehaviour
     {
         bool objectInsideTriggerAlready = false;
 
+        GameObject[] copyOfObjectsInTrigger;
+        int objectsLength;
 
-        for (int i = 0; i < ObjectsInTrigger.Length; i++)
+        if (objectsInTrigger != null)
         {
-            if (ObjectsInTrigger[i] == EnteringObject)
-            {
-                objectInsideTriggerAlready = true;
-            }
+            objectsLength = objectsInTrigger.Length;
         }
-
+        else
+        {
+            objectsLength = 0;
+        }
+            for (int i = 0; i < objectsLength; i++)
+            {
+                if (objectsInTrigger[i] == EnteringObject)
+                {
+                    objectInsideTriggerAlready = true;
+                }
+            }
+        
 
         if (!objectInsideTriggerAlready)
         {
-            int idNumber = ObjectsInTrigger.Length + 1;
+            int idNumber = objectsLength + 1;
 
 
-            _CopyOfObjectsInTrigger = new GameObject[idNumber];
+            copyOfObjectsInTrigger = new GameObject[idNumber];
 
-            for (int i = 0; i < ObjectsInTrigger.Length; i++)
+            for (int i = 0; i < objectsLength; i++)
             {
-                _CopyOfObjectsInTrigger[i] = ObjectsInTrigger[i];
+                copyOfObjectsInTrigger[i] = objectsInTrigger[i];
             }
-            _CopyOfObjectsInTrigger[idNumber - 1] = EnteringObject;
+            copyOfObjectsInTrigger[idNumber - 1] = EnteringObject;
 
-            ObjectsInTrigger = _CopyOfObjectsInTrigger;
-
-            ClearUnusedLists();
+            objectsInTrigger = copyOfObjectsInTrigger;
         }
     }
 
     // removing object from colliding object list
-    public void ObjectLeavingTrigger(GameObject leavingGuardUnit)
+    public void ObjectLeavingTrigger(GameObject leavingObject)
     {
         bool objectInsideTriggerAlready = false;
         int leavingObjectId = -1;
 
-        for (int i = 0; i < ObjectsInTrigger.Length; i++)
+        GameObject[] copyOfObjectsInTrigger = null;
+        GameObject[] newListOfObjectsInTrigger = null;
+
+        if (objectsInTrigger != null)
         {
-            if (ObjectsInTrigger[i] == leavingGuardUnit)
+            for (int i = 0; i < objectsInTrigger.Length; i++)
             {
-                leavingObjectId = i;
-                objectInsideTriggerAlready = true;
+                if (objectsInTrigger[i] == leavingObject)
+                {
+                    leavingObjectId = i;
+                    objectInsideTriggerAlready = true;
+                }
             }
         }
 
 
         if (objectInsideTriggerAlready)
         {
-            for (int i = 0; i < ObjectsInTrigger.Length; i++)
+            for (int i = 0; i < objectsInTrigger.Length; i++)
             {
-                if (i != leavingObjectId && ObjectsInTrigger[i] != leavingGuardUnit)
+                if (i != leavingObjectId && objectsInTrigger[i] != leavingObject)
                 {
                     int idNumber;
-                    if (_CopyOfObjectsInTrigger == null)
+                    if (copyOfObjectsInTrigger == null)
                     {
                         idNumber = 1;
                     }
                     else
                     {
-                        idNumber = _CopyOfObjectsInTrigger.Length + 1;
+                        idNumber = copyOfObjectsInTrigger.Length + 1;
                     }
 
-                    _CopyOfObjectsInTrigger = new GameObject[idNumber];
-                    _CopyOfObjectsInTrigger[idNumber - 1] = ObjectsInTrigger[i];
+                    copyOfObjectsInTrigger = new GameObject[idNumber];
+                    copyOfObjectsInTrigger[idNumber - 1] = objectsInTrigger[i];
 
-                    if (_NewListOfObjectsInTrigger != null)
+                    if (newListOfObjectsInTrigger != null)
                     {
-                        for (int x = 0; x < _NewListOfObjectsInTrigger.Length; x++)
+                        for (int x = 0; x < newListOfObjectsInTrigger.Length; x++)
                         {
-                            _CopyOfObjectsInTrigger[x] = _NewListOfObjectsInTrigger[x];
+                            copyOfObjectsInTrigger[x] = newListOfObjectsInTrigger[x];
                         }
                     }
 
-                    _NewListOfObjectsInTrigger = _CopyOfObjectsInTrigger;
+                    newListOfObjectsInTrigger = copyOfObjectsInTrigger;
                 }
             }
-
-            ObjectsInTrigger = _NewListOfObjectsInTrigger;
-            ClearUnusedLists();
+                objectsInTrigger = newListOfObjectsInTrigger;
+            
         }
-    }
-
-    // clearing supporting lists of colliding objects
-    void ClearUnusedLists()
-    {
-        _NewListOfObjectsInTrigger = new GameObject[0];
-        _CopyOfObjectsInTrigger = new GameObject[0];
     }
 }

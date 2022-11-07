@@ -5,76 +5,77 @@ using UnityEngine;
 public class VehicleMovement : MonoBehaviour
 {
     // gameobject which is works as bumper and detect collision with next object
-    public VehicleBumperTrigger BumperTrigger;
+    public VehicleBumperTrigger bumperTrigger;
 
     // Next navigation point to move on
-    public NavigationPoint PlanedNextMovementPoint;
+    public NavigationPoint planedNextMovementPoint;
     // Previus navigation points stored in memmory
-    public NavigationPoint NextMovementPoint;
-    private NavigationPoint _PrevMovementPoint;
-    private NavigationPoint _SecPrevMovementPoint;
+    public NavigationPoint nextMovementPoint;
+    private NavigationPoint prevMovementPoint;
+    private NavigationPoint secPrevMovementPoint;
 
-    // ...
-    public bool IsaBus;
     [Range(1, 3)]    // Number of navigation points taken by this vehicle
-    public int VehicleLength;
+    public int vehicleLength;
 
     [SerializeField] // Actual speed of this vehicle
-    private float _Speed = 0;
+    private float speed = 0;
 
     // Acceleration of this vehicle;
-    public float SpeedAcceleration = 0.05f;
+    [SerializeField]
+    private float speedAcceleration = 0.05f;
     // Breaking power of this vehicle
-    public float SpeedBreak = 0.2f;
+    [SerializeField]
+    private float speedBreak = 0.2f;
     // Max speed of this vehicle;
-    public float SpeedMax = 0.25f;
+    [SerializeField]
+    private float speedMax = 0.25f;
 
     // VehicleVisuals for randomization and animation of this vehicle
-    VehicleVisuals VS;
+    private VehicleVisuals vV;
 
     private void Start()
     {
-        VS = GetComponent<VehicleVisuals>();
+        vV = GetComponent<VehicleVisuals>();
     }
     void Update()
     {
         // emergency navigationpoint finder
-        if (NextMovementPoint == null)
+        if (nextMovementPoint == null)
         {
-            NextMovementPoint = GameObject.Find("NavigationPoint").GetComponent<NavigationPoint>();
+            nextMovementPoint = GameObject.Find("NavigationPoint").GetComponent<NavigationPoint>();
 
-            if (NextMovementPoint.OccupyingObject == null)
+            if (nextMovementPoint.occupyingObject == null)
             {
-                NextMovementPoint.OccupyingObject = gameObject;
+                nextMovementPoint.occupyingObject = gameObject;
             }
 
         }
         // emergency navigationpoint finder 2
-        if (PlanedNextMovementPoint == NextMovementPoint || PlanedNextMovementPoint == null)
+        if (planedNextMovementPoint == nextMovementPoint || planedNextMovementPoint == null)
         {
             if (Random.Range(0, 3) >= 1)
             {
-                PlanedNextMovementPoint = NextMovementPoint.NextNavigationPoints[Random.Range(0, NextMovementPoint.NextNavigationPoints.Length)].GetComponent<NavigationPoint>();
+                planedNextMovementPoint = nextMovementPoint.nextNavigationPoints[Random.Range(0, nextMovementPoint.nextNavigationPoints.Length)].GetComponent<NavigationPoint>();
             }
             else
             {
-                PlanedNextMovementPoint = NextMovementPoint.NextNavigationPoints[0].GetComponent<NavigationPoint>();
+                planedNextMovementPoint = nextMovementPoint.nextNavigationPoints[0].GetComponent<NavigationPoint>();
             }
         }
 
         // chenging navigation point to next in case of being close enough
-        if ((transform.position - NextMovementPoint.transform.position).magnitude < 10)
+        if ((transform.position - nextMovementPoint.transform.position).magnitude < 10)
         {
 
-            if (!PlanedNextMovementPoint.RedLight && (PlanedNextMovementPoint.OccupyingObject == null || NextMovementPoint.IsEndPoint))
+            if (!planedNextMovementPoint.redLight && (planedNextMovementPoint.occupyingObject == null || nextMovementPoint.isEndPoint))
             {
-                if (NextMovementPoint.IsEndPoint) // despawning vehicle in case ending in endpoint
+                if (nextMovementPoint.isEndPoint) // despawning vehicle in case ending in endpoint
                 {
                     Destroy(gameObject);
                 }
                 else
                 {
-                    ChangeMovementPoint(PlanedNextMovementPoint);
+                    ChangeMovementPoint(planedNextMovementPoint);
                 }
             }
             else
@@ -82,9 +83,9 @@ public class VehicleMovement : MonoBehaviour
                 SlowDown();
             }
         }
-        else if (BumperTrigger != null)
+        else if (bumperTrigger != null)
         {
-            if (!BumperTrigger.BumperIsActivated)
+            if (!bumperTrigger.bumperIsActivated)
             {
                 Movement();
             }
@@ -103,13 +104,13 @@ public class VehicleMovement : MonoBehaviour
     // stoping this vehicle
     void SlowDown()
     {
-        if (_Speed > 0)
+        if (speed > 0)
         {
-            _Speed -= SpeedBreak * Time.deltaTime;
+            speed -= speedBreak * Time.deltaTime;
 
-            if (_Speed < 0)
+            if (speed < 0)
             {
-                _Speed = 0;
+                speed = 0;
             }
         }
     }
@@ -117,13 +118,13 @@ public class VehicleMovement : MonoBehaviour
     // speeding up of this vehicle
     void SpeedUp()
     {
-        if (_Speed < SpeedMax)
+        if (speed < speedMax)
         {
-            _Speed += SpeedAcceleration * Time.deltaTime;
+            speed += speedAcceleration * Time.deltaTime;
         }
-        else if (_Speed > SpeedMax)
+        else if (speed > speedMax)
         {
-            _Speed = SpeedMax;
+            speed = speedMax;
         }
     }
 
@@ -132,23 +133,23 @@ public class VehicleMovement : MonoBehaviour
         SpeedUp();
 
         // moving vehicle by acctual speed
-        transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, _Speed);
+        transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, speed);
 
         // rotation of vehicle towards next navigation point
-        Vector3 targetDirection = NextMovementPoint.transform.position - transform.position;
+        Vector3 targetDirection = nextMovementPoint.transform.position - transform.position;
         targetDirection.y = 0;
-        float singleStep = (_Speed * 5) * Time.deltaTime;
+        float singleStep = (speed * 5) * Time.deltaTime;
         Vector3 newDirection = Vector3.RotateTowards(transform.forward, targetDirection, singleStep, 0.0f);
         transform.rotation = Quaternion.LookRotation(newDirection);
 
         // animation of all wheels accurate to current speed
-        if (VS)
+        if (vV)
         {
-            foreach (GameObject wheel in VS.DriveWheels)
+            foreach (GameObject wheel in vV.driveWheels)
             {
                 if (wheel != null)
                 {
-                    wheel.transform.Rotate(0, 0, -10f * (_Speed * 4));
+                    wheel.transform.Rotate(0, 0, -10f * (speed * 4));
 
                 }
             }
@@ -158,67 +159,67 @@ public class VehicleMovement : MonoBehaviour
     // Choosing next navigation point
     void ChangeMovementPoint(NavigationPoint choosenMovementPoint)
     {
-        if (NextMovementPoint.IsCrossingStartPoint)
+        if (nextMovementPoint.isCrossingStartPoint)
         {
-            BumperTrigger.BumperIsEnabled = false;
+            bumperTrigger.bumperIsEnabled = false;
             //BumperTrigger.GetComponent<Collider>().enabled = false;
         }
-        else if (NextMovementPoint.IsCrossingEndPoint)
+        else if (nextMovementPoint.isCrossingEndPoint)
         {
-            BumperTrigger.BumperIsEnabled = true;
+            bumperTrigger.bumperIsEnabled = true;
             //BumperTrigger.GetComponent<Collider>().enabled = true;
         }
 
-        if (VehicleLength == 2)
+        if (vehicleLength == 2)
         {
-            if (_PrevMovementPoint == null)
+            if (prevMovementPoint == null)
             {
 
             }
-            else if (_PrevMovementPoint.OccupyingObject == gameObject)
+            else if (prevMovementPoint.occupyingObject == gameObject)
             {
-                _PrevMovementPoint.OccupyingObject = null;
+                prevMovementPoint.occupyingObject = null;
             }
         }
-        else if (VehicleLength == 3)
+        else if (vehicleLength == 3)
         {
-            if (_SecPrevMovementPoint == null)
+            if (secPrevMovementPoint == null)
             {
 
             }
-            else if (_SecPrevMovementPoint.OccupyingObject == gameObject)
+            else if (secPrevMovementPoint.occupyingObject == gameObject)
             {
-                _SecPrevMovementPoint.OccupyingObject = null;
+                secPrevMovementPoint.occupyingObject = null;
             }
         }
         else
         {
-            if (NextMovementPoint.OccupyingObject == gameObject)
+            if (nextMovementPoint.occupyingObject == gameObject)
             {
-                NextMovementPoint.OccupyingObject = null;
+                nextMovementPoint.occupyingObject = null;
             }
         }
 
-        _SecPrevMovementPoint = _PrevMovementPoint;
-        _PrevMovementPoint = NextMovementPoint;
-        NextMovementPoint = choosenMovementPoint;
-        NextMovementPoint.OccupyingObject = gameObject;
+        secPrevMovementPoint = prevMovementPoint;
+        prevMovementPoint = nextMovementPoint;
+        nextMovementPoint = choosenMovementPoint;
+        nextMovementPoint.occupyingObject = gameObject;
     }
     
     // Clearing navigation points taken by this vehicle from thier memory
     private void OnDestroy()
     {
-        if (NextMovementPoint.OccupyingObject == gameObject)
+        if (nextMovementPoint.occupyingObject == gameObject)
         {
-            NextMovementPoint.OccupyingObject = null;
+            nextMovementPoint.occupyingObject = null;
         }
-        if (_PrevMovementPoint.OccupyingObject == gameObject)
+        if (prevMovementPoint.occupyingObject == gameObject)
         {
-            _PrevMovementPoint.OccupyingObject = null;
+            prevMovementPoint.occupyingObject = null;
         }
-        if (_SecPrevMovementPoint.OccupyingObject == gameObject)
+        if (secPrevMovementPoint.occupyingObject == gameObject)
         {
-            _SecPrevMovementPoint.OccupyingObject = null;
+            secPrevMovementPoint.occupyingObject = null;
         }
     }
 }

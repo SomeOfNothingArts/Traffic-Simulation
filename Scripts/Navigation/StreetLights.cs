@@ -1,91 +1,56 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static System.Collections.Specialized.BitVector32;
+
+[Serializable]
+struct LightPhases
+{
+    public NavigationPoint[] greenLightInPhase;
+}
 
 public class StreetLights : MonoBehaviour
 {
-    [Range(2, 4)]
-    public int NumberOfPhases;
-    public int CurrentPhase;
+    private int currentPhase;
+    [SerializeField]
+    private LightPhases[] lightPhases;
 
-    public NavigationPoint[] GreenLightPointsPhase1;
-    public NavigationPoint[] GreenLightPointsPhase2;
-    public NavigationPoint[] GreenLightPointsPhase3;
-    public NavigationPoint[] GreenLightPointsPhase4;
-
-
-    public float PhaseLength = 7.5f;
+    [SerializeField]
+    private float phaseLength = 7.5f;
 
     private void Start()
     {
-        InvokeRepeating("TurnAllLightsRed", 0, PhaseLength);
-        InvokeRepeating("ChangePhase", PhaseLength / 5, PhaseLength);
+        InvokeRepeating("TurnAllLightsRed", 0, phaseLength);
+        InvokeRepeating("ChangePhase", phaseLength / 5, phaseLength);
     }
 
     // changing light phase to next one
     void ChangePhase()
     {
 
-        CurrentPhase += 1;
-        if (CurrentPhase > NumberOfPhases)
+        currentPhase += 1;
+        if (currentPhase >= lightPhases.Length)
         {
-            CurrentPhase = 1;
+            currentPhase = 0;
         }
 
-        if (CurrentPhase == 1 && GreenLightPointsPhase1 != null)
+        foreach (NavigationPoint light in lightPhases[currentPhase].greenLightInPhase)
         {
-            foreach (NavigationPoint light in GreenLightPointsPhase1)
-            {
-                light.RedLight = false;
-            }
+            light.redLight = false;
         }
-        else if (CurrentPhase == 2 && GreenLightPointsPhase2 != null)
-        {
-            foreach (NavigationPoint light in GreenLightPointsPhase2)
-            {
-                light.RedLight = false;
-            }
-        }
-        else if (CurrentPhase == 3 && GreenLightPointsPhase3 != null)
-        {
-            foreach (NavigationPoint light in GreenLightPointsPhase3)
-            {
-                light.RedLight = false;
-            }
-        }
-        else if (CurrentPhase == 4 && GreenLightPointsPhase4 != null)
-        {
-            foreach (NavigationPoint light in GreenLightPointsPhase4)
-            {
-                light.RedLight = false;
-            }
-        }
-
     }
 
     // turning all lights red for preparation for next phase
     void TurnAllLightsRed()
     {
-        if (GreenLightPointsPhase1 != null)
-            foreach (NavigationPoint light in GreenLightPointsPhase1)
+        for (int a = 0; a < lightPhases.Length; a++)
+        {
+            foreach (NavigationPoint light in lightPhases[a].greenLightInPhase)
             {
-                light.RedLight = true;
+                light.redLight = true;
             }
-        if (GreenLightPointsPhase2 != null)
-            foreach (NavigationPoint light in GreenLightPointsPhase2)
-            {
-                light.RedLight = true;
-            }
-        if (GreenLightPointsPhase3 != null)
-            foreach (NavigationPoint light in GreenLightPointsPhase3)
-            {
-                light.RedLight = true;
-            }
-        if (GreenLightPointsPhase4 != null)
-            foreach (NavigationPoint light in GreenLightPointsPhase4)
-            {
-                light.RedLight = true;
-            }
+        }
     }
 
 

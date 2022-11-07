@@ -23,7 +23,7 @@ public class NearNavigationPointFinder : Editor
             NP.FindNewNavigationPoint();
 
 
-            Selection.activeObject = NP.NextNavigationPoints[NP.AutoConnectorSelectedNaviPoint];
+            Selection.activeObject = NP.nextNavigationPoints[NP.autoConnectorSelectedNaviPoint];
 
             PrefabUtility.RecordPrefabInstancePropertyModifications(NP);
 

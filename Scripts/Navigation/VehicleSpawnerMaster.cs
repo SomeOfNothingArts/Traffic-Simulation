@@ -21,26 +21,21 @@ public class VehicleSpawnerMaster : MonoBehaviour
         }
     }
     
-    public bool GameIsPlaying = true;
+    public bool gameIsPlaying = true;
 
-    public GameObject[] SpawnableCars;
+    public GameObject[] spawnableCars;
 
-    public int TimeBetweenSpawns = 5;
-    //UnityEvent Event_SpawnTime;
+    public int timeBetweenSpawns = 5;
 
     void Start()
     {
-        //if (Event_SpawnTime == null)
-        //{
-        //    Event_SpawnTime = new UnityEvent();
-        //}
 
-        InvokeRepeating("TryToSpawn", 0, TimeBetweenSpawns);
+        InvokeRepeating("TryToSpawn", 0, timeBetweenSpawns);
     }
 
     void TryToSpawn()
     {
-        if (OnSpawn != null && GameIsPlaying)
+        if (OnSpawn != null && gameIsPlaying)
         {
             OnSpawn();
         }
